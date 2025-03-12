@@ -86,6 +86,7 @@ class DeviceDataManager(IDataMessageListener):
 		self.triggerHvacTempCeiling   = \
 			self.configUtil.getFloat( \
 				ConfigConst.CONSTRAINED_DEVICE, ConfigConst.TRIGGER_HVAC_TEMP_CEILING_KEY);
+
 		
 	def getLatestActuatorDataResponseFromCache(self, name: str = None) -> ActuatorData:
 		"""
@@ -130,6 +131,7 @@ class DeviceDataManager(IDataMessageListener):
 		else:
 			logging.warning("Incoming actuator command is invalid (null). Ignoring.")
 			return None
+	
 	
 	def handleActuatorCommandResponse(self, data: ActuatorData = None) -> bool:
 		"""
@@ -219,6 +221,7 @@ class DeviceDataManager(IDataMessageListener):
 			self.sensorAdapterMgr.startManager()
 
 		logging.info("Started DeviceDataManager.")
+
 		
 	def stopManager(self):
 		logging.info("Stopping DeviceDataManager...")
