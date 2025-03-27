@@ -182,4 +182,7 @@ class MqttClientConnector(IPubSubClient):
 	def setDataMessageListener(self, listener: IDataMessageListener = None) -> bool:
 		if listener:
 			self.dataMsgListener = listener
+			return True
+		
+		return False
 
