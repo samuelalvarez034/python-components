@@ -6,10 +6,10 @@
 #
 # IMPORTANT: Edit this file to meet your local system requirements.
 #
-
 #
 # MQTT client configuration information
 #
+
 [Mqtt.GatewayService]
 credFile       = ./cred/PiotMqttLocalCred.props
 certFile       = ./cert/PiotMqttLocalCertFile.pem
