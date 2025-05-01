@@ -104,9 +104,32 @@ class CoapClientConnector(IRequestResponseClient):
 		logging.info("sendPostRequest called")
 		return False
 
-	def sendPutRequest(self, resource: ResourceNameEnum = None, name: str = None, enableCON: bool = False, payload: str = None, timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT) -> bool:
-		logging.info("sendPutRequest called")
-		return False
+	def sendPutRequest(
+		self,
+		resource: ResourceNameEnum = None,
+		name: str = None,
+		enableCON: bool = False,
+		payload: str = None,
+		timeout: int = IRequestResponseClient.DEFAULT_TIMEOUT
+	) -> bool:
+		self.host = "localhost"
+		self.port = 5683
+		if resource or name:
+			resourcePath = self._createResourcePath(resource, name)
+			coapUrl = f"coap://{self.host}:{self.port}/{resourcePath}"
+
+			logging.info("Issuing Async PUT to path: " + resourcePath)
+
+			asyncio.get_event_loop().run_until_complete(
+				self._handlePutRequest(
+					resourcePath=coapUrl,
+					payload=payload,
+					enableCON=enableCON
+				)
+			)
+		else:
+			logging.warning("Can't issue Async PUT - no path or path list provided.")
+
 
 	def setDataMessageListener(self, listener: IDataMessageListener = None) -> bool:
 		if listener is not None:
@@ -203,3 +226,35 @@ class CoapClientConnector(IRequestResponseClient):
 				logging.info("Response data received. Payload: %s", jsonData)
 		else:
 			logging.info("Response data received. Payload: %s", jsonData)
+
+	async def _handlePutRequest(self, resourcePath: str = None, payload: str = None, enableCON: bool = False):
+		try:
+			msgType = NON
+
+			if enableCON:
+				msgType = CON
+
+			payloadBytes = b''
+
+			# Decide which encoding to use - can also load from config
+			if payload:
+				payloadBytes = payload.encode('utf-8')
+
+			msg = Message(mtype=msgType, payload=payloadBytes, code=Code.PUT, uri=resourcePath)
+			req = self.coapClient.request(msg)
+			responseData = await req.response
+
+			self._onPutResponse(responseData)
+
+		except Exception as e:
+			# TODO: for debugging, you may want to optionally include the stack trace, as shown
+			logging.warning("Failed to process PUT request for path: " + resourcePath)
+			traceback.print_exception(type(e), e, e.__traceback__)
+
+	def _onPutResponse(self, response):
+		if not response:
+			logging.warning('PUT response invalid. Ignoring.')
+			return
+
+		logging.info('PUT response received: %s', response.payload)
+
