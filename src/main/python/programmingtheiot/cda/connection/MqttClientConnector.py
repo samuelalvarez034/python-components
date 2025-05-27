@@ -10,6 +10,7 @@
 import logging
 import paho.mqtt.client as mqttClient
 
+from programmingtheiot.data.DataUtil import DataUtil
 import programmingtheiot.common.ConfigConst as ConfigConst
 import ssl
 from programmingtheiot.common.ConfigUtil import ConfigUtil
@@ -56,10 +57,11 @@ class MqttClientConnector(IPubSubClient):
 		#      a random value (not recommended if setting clean session flag to False)
 
 		# TODO: the following is just a sample; use your own unique ID
-		if not clientID:
-			self.clientID = \
-				self.config.getProperty( \
-					ConfigConst.CONSTRAINED_DEVICE, ConfigConst.DEVICE_LOCATION_ID_KEY)
+		if clientID:
+			self.clientID = clientID
+		else:
+			self.clientID = self.config.getProperty(
+				ConfigConst.CONSTRAINED_DEVICE, ConfigConst.DEVICE_LOCATION_ID_KEY)
 
 		# TODO: be sure to validate the clientID!
 		self.enableEncryption = \
@@ -91,7 +93,7 @@ class MqttClientConnector(IPubSubClient):
 					self.mqttClient.tls_set(self.pemFileName, tls_version = ssl.PROTOCOL_TLS_CLIENT)
 			except:
 				logging.warning("Failed to enable TLS encryption. Using unencrypted connection.")
-				
+
 			self.mqttClient.on_connect = self.onConnect
 			self.mqttClient.on_disconnect = self.onDisconnect
 			self.mqttClient.on_message = self.onMessage
@@ -120,7 +122,20 @@ class MqttClientConnector(IPubSubClient):
 		return False
 			
 	def onConnect(self, client, userdata, flags, rc):
-		pass
+		logging.info('[Callback] Connected to MQTT broker. Result code: ' + str(rc))
+
+		# Suscribirse al tópico de comandos de actuador
+		self.mqttClient.subscribe(
+			topic = ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE.value,
+			qos = self.defaultQos
+		)
+
+		# Asociar el callback con ese tópico
+		self.mqttClient.message_callback_add(
+			sub = ResourceNameEnum.CDA_ACTUATOR_CMD_RESOURCE.value,
+			callback = self.onActuatorCommandMessage
+		)
+
 			
 	def onDisconnect(self, client, userdata, rc):
 		pass
@@ -135,19 +150,14 @@ class MqttClientConnector(IPubSubClient):
 		pass
 		
 	def onActuatorCommandMessage(self, client, userdata, msg):
-		"""
-		This callback is defined as a convenience, but does not
-		need to be used and can be ignored.
-		
-		It's simply an example for how you can create your own
-		custom callback for incoming messages from a specific
-		topic subscription (such as for actuator commands).
-		
-		@param client The client reference context.
-		@param userdata The user reference context.
-		@param msg The message context, including the embedded payload.
-		"""
-		pass
+		logging.info('[Callback] Actuator command message received. Topic: %s.', msg.topic)
+
+		if self.dataMsgListener:
+			try:
+				actuatorData = DataUtil().jsonToActuatorData(msg.payload.decode('utf-8'))
+				self.dataMsgListener.handleActuatorCommandMessage(actuatorData)
+			except:
+				logging.exception("Failed to convert incoming actuation command payload to ActuatorData: ")
 	
 	def publishMessage(self, resource: ResourceNameEnum = None, msg: str = None, qos: int = ConfigConst.DEFAULT_QOS):
 		# check validity of resource (topic)
@@ -166,7 +176,7 @@ class MqttClientConnector(IPubSubClient):
 
 		# publish message, and wait for publish to complete before returning
 		msgInfo = self.mqttClient.publish(topic = resource.value, payload = msg, qos = qos)
-		msgInfo.wait_for_publish()
+		#msgInfo.wait_for_publish()
 
 		return True
 
@@ -204,4 +214,5 @@ class MqttClientConnector(IPubSubClient):
 			return True
 		
 		return False
+
 
