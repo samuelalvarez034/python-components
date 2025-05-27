@@ -57,17 +57,18 @@ class MqttClientConnector(IPubSubClient):
 		#      a random value (not recommended if setting clean session flag to False)
 
 		# TODO: the following is just a sample; use your own unique ID
-		if clientID:
+		if clientID is not None:
 			self.clientID = clientID
 		else:
 			self.clientID = self.config.getProperty(
 				ConfigConst.CONSTRAINED_DEVICE, ConfigConst.DEVICE_LOCATION_ID_KEY)
 
+		print(self.clientID)
 		# TODO: be sure to validate the clientID!
 		self.enableEncryption = \
 			self.config.getBoolean( \
 				ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.ENABLE_CRYPT_KEY)
-
+		
 		self.pemFileName = \
 			self.config.getProperty( \
 				ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.CERT_FILE_KEY)
@@ -89,7 +90,6 @@ class MqttClientConnector(IPubSubClient):
 					self.port = \
 						self.config.getInteger( \
 							ConfigConst.MQTT_GATEWAY_SERVICE, ConfigConst.SECURE_PORT_KEY, ConfigConst.DEFAULT_MQTT_SECURE_PORT)
-
 					self.mqttClient.tls_set(self.pemFileName, tls_version = ssl.PROTOCOL_TLS_CLIENT)
 			except:
 				logging.warning("Failed to enable TLS encryption. Using unencrypted connection.")
@@ -138,10 +138,15 @@ class MqttClientConnector(IPubSubClient):
 
 			
 	def onDisconnect(self, client, userdata, rc):
-		pass
-			
+		if rc == 0:
+			logging.info("[Callback] Disconnected cleanly from MQTT broker.")
+		else:
+			logging.warning(f"[Callback] Unexpected disconnect with result code: {rc}")
+				
 	def onMessage(self, client, userdata, msg):
-		pass
+		logging.debug(f"Received message on topic {msg.topic}: {msg.payload.decode()}")
+		if self.dataMsgListener:
+			self.dataMsgListener.handleIncomingMessage(msg.topic, msg.payload.decode())
 				
 	def onPublish(self, client, userdata, mid):
 		pass
