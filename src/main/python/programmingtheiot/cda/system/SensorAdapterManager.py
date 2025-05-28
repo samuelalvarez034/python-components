@@ -23,6 +23,7 @@ from programmingtheiot.cda.sim.HumiditySensorSimTask import HumiditySensorSimTas
 from programmingtheiot.cda.sim.TemperatureSensorSimTask import TemperatureSensorSimTask
 from programmingtheiot.cda.sim.PressureSensorSimTask import PressureSensorSimTask
 
+
 class SensorAdapterManager(object):
 	"""
 	Shell representation of class for student implementation.
@@ -57,6 +58,7 @@ class SensorAdapterManager(object):
 		self.humidityAdapter = None
 		self.pressureAdapter = None
 		self.tempAdapter     = None
+		self.airQualityAdapter = None
 
 		# see PIOT-CDA-03-006 description for thoughts on the next line of code
 		self._initEnvironmentalSensorTasks()
@@ -65,19 +67,25 @@ class SensorAdapterManager(object):
 		humidityData = self.humidityAdapter.generateTelemetry()
 		pressureData = self.pressureAdapter.generateTelemetry()
 		tempData     = self.tempAdapter.generateTelemetry()
+		airQualityData = self.airQualityAdapter.generateTelemetry()
+
 
 		humidityData.setLocationID(self.locationID)
 		pressureData.setLocationID(self.locationID)
 		tempData.setLocationID(self.locationID)
-
+		airQualityData.setLocationID(self.locationID)
+	
 		logging.debug('Generated humidity data: ' + str(humidityData))
 		logging.debug('Generated pressure data: ' + str(pressureData))
 		logging.debug('Generated temp data: ' + str(tempData))
+		logging.debug('Generated air quality data: ' + str(airQualityData))
+
 
 		if self.dataMsgListener:
 			self.dataMsgListener.handleSensorMessage(humidityData)
 			self.dataMsgListener.handleSensorMessage(pressureData)
 			self.dataMsgListener.handleSensorMessage(tempData)
+			self.dataMsgListener.handleSensorMessage(airQualityData)
 		
 	def setDataMessageListener(self, listener: IDataMessageListener):
 		if listener:
@@ -154,3 +162,7 @@ class SensorAdapterManager(object):
 			teModule = import_module('programmingtheiot.cda.emulated.TemperatureSensorEmulatorTask', 'TemperatureSensorEmulatorTask')
 			teClazz = getattr(teModule, 'TemperatureSensorEmulatorTask')
 			self.tempAdapter = teClazz()
+
+			aqModule = import_module('programmingtheiot.cda.emulated.AirQualitySensorEmulatorTask', 'AirQualitySensorEmulatorTask')
+			aqClazz = getattr(aqModule, 'AirQualitySensorEmulatorTask')
+			self.airQualityAdapter = aqClazz()
