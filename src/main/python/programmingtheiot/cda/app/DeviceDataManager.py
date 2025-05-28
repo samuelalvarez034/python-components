@@ -271,7 +271,7 @@ class DeviceDataManager(IDataMessageListener):
 		"""
 		pass
 		
-	def _handleSensorDataAnalysis(self, resource = None, data: SensorData = None):
+	def _handleSensorDataAnalysis(self, data: SensorData = None):
 		"""
 		Call this from handleSensorMessage() to determine if there's
 		any action to take on the message. Steps to take:
