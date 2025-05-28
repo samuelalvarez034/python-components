@@ -56,7 +56,11 @@ class CoapClientConnectorTest(unittest.TestCase):
 		pass
 
 	def tearDown(self):
-		pass
+		try:
+			self._stopObserver()
+		except Exception:
+			pass
+
 
 	#@unittest.skip("Ignore for now.")
 	def testConnectAndDiscover(self):
@@ -143,13 +147,13 @@ class CoapClientConnectorTest(unittest.TestCase):
 		self.coapClient.sendPutRequest( \
 			resource = ResourceNameEnum.CDA_SENSOR_MSG_RESOURCE, enableCON = False, payload = jsonData, timeout = 5)
 
-	#@unittest.skip("Ignore for now.")
+	@unittest.skip("Ignore for now.")
 	def testActuatorCommandObserve(self):
 		"""
 		Comment the annotation to test Observe
 		"""
 		self._startObserver()
-		sleep(30)
+		sleep(5)
 		self._stopObserver()
 		
 	def _startObserver(self):
