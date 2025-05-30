@@ -22,6 +22,7 @@ from programmingtheiot.cda.sim.SensorDataGenerator import SensorDataGenerator
 from programmingtheiot.cda.sim.HumiditySensorSimTask import HumiditySensorSimTask
 from programmingtheiot.cda.sim.TemperatureSensorSimTask import TemperatureSensorSimTask
 from programmingtheiot.cda.sim.PressureSensorSimTask import PressureSensorSimTask
+from programmingtheiot.cda.sim.AirQualitySensorSimTask import AirQualitySensorSimTask
 
 
 class SensorAdapterManager(object):
@@ -132,6 +133,13 @@ class SensorAdapterManager(object):
 		tempCeiling     = \
 			self.configUtil.getFloat( \
 				section = ConfigConst.CONSTRAINED_DEVICE, key = ConfigConst.TEMP_SIM_CEILING_KEY, defaultVal = SensorDataGenerator.HI_NORMAL_INDOOR_TEMP)
+		
+		airFloor   = \
+			self.configUtil.getFloat( \
+				section = ConfigConst.CONSTRAINED_DEVICE, key = ConfigConst.AIR_QUALITY_SIM_FLOOR_KEY, defaultVal = SensorDataGenerator.LOW_NORMAL_ENV_AIR)
+		airCeiling = \
+			self.configUtil.getFloat( \
+				section = ConfigConst.CONSTRAINED_DEVICE, key = ConfigConst.AIR_QUALITY_SIM_CEILING_KEY, defaultVal = SensorDataGenerator.HI_NORMAL_ENV_AIR)
 
 		if not self.useEmulator:
 			self.dataGenerator = SensorDataGenerator()
@@ -145,10 +153,14 @@ class SensorAdapterManager(object):
 			tempData     = \
 				self.dataGenerator.generateDailyIndoorTemperatureDataSet( \
 					minValue = tempFloor, maxValue = tempCeiling, useSeconds = False)
+			airQualityData = \
+				self.dataGenerator.generateDailyEnvironmentAirQualityDataSet( \
+					minValue = airFloor, maxValue = airCeiling, useSeconds = False)
 
 			self.humidityAdapter = HumiditySensorSimTask(dataSet = humidityData)
 			self.pressureAdapter = PressureSensorSimTask(dataSet = pressureData)
 			self.tempAdapter     = TemperatureSensorSimTask(dataSet = tempData)
+			self.airQualityAdapter = AirQualitySensorSimTask(dataSet= airQualityData)
 
 		else:
 			heModule = import_module('programmingtheiot.cda.emulated.HumiditySensorEmulatorTask', 'HumiditySensorEmulatorTask')

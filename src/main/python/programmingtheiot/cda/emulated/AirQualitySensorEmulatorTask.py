@@ -1,54 +1,45 @@
+#####
 # 
 # This class is part of the Programming the Internet of Things project.
 # 
+# It is provided as a simple shell to guide the student and assist with
+# implementation for the Programming the Internet of Things exercises,
+# and designed to be modified by the student as needed.
+#
 
-import logging
-
-from time import sleep
+from programmingtheiot.data.SensorData import SensorData
 
 import programmingtheiot.common.ConfigConst as ConfigConst
 
 from programmingtheiot.common.ConfigUtil import ConfigUtil
-from programmingtheiot.cda.sim.BaseActuatorSimTask import BaseActuatorSimTask
+from programmingtheiot.cda.sim.BaseSensorSimTask import BaseSensorSimTask
 
 from pisense import SenseHAT
 
-class AirPurifierEmulatorTask(BaseActuatorSimTask):
+
+class AirQualitySensorEmulatorTask(BaseSensorSimTask):
 	"""
-	Emulated air purifier actuator using SenseHAT screen.
+	Shell representation of class for student implementation.
+	
 	"""
 
-	def __init__(self):
+	def __init__(self, dataSet = None):
 		super( \
-			AirPurifierEmulatorTask, self).__init__( \
-				name = ConfigConst.AIR_PURIFIER_ACTUATOR_NAME, \
-				typeID = ConfigConst.AIR_PURIFIER_ACTUATOR_TYPE, \
-				simpleName = "AIR PURIFIER")
+			AirQualitySensorEmulatorTask, self).__init__( \
+				name = ConfigConst.AIR_QUALITY_SENSOR_NAME, \
+				typeID = ConfigConst.AIR_QUALITY_SENSOR_TYPE)
 
 		enableEmulation = \
 			ConfigUtil().getBoolean( \
 				ConfigConst.CONSTRAINED_DEVICE, ConfigConst.ENABLE_EMULATOR_KEY)
 
 		self.sh = SenseHAT(emulate = enableEmulation)
+	
+	def generateTelemetry(self) -> SensorData:
+		sensorData = SensorData(name = self.getName(), typeID = self.getTypeID())
+		sensorVal = self.sh.environ.airquality
 
-	def _activateActuator(self, val: float = ConfigConst.DEFAULT_VAL, stateData: str = None) -> int:
-		if self.sh.screen:
-			msg = self.getSimpleName() + ' ON: ' + str(val)
-			self.sh.screen.scroll_text(msg)
-			return 0
-		else:
-			logging.warning("No SenseHAT LED screen instance to write.")
-			return -1
+		sensorData.setValue(sensorVal)
+		self.latestSensorData = sensorData
 
-	def _deactivateActuator(self, val: float = ConfigConst.DEFAULT_VAL, stateData: str = None) -> int:
-		if self.sh.screen:
-			msg = self.getSimpleName() + ' OFF'
-			self.sh.screen.scroll_text(msg)
-
-			sleep(5)
-
-			self.sh.screen.clear()
-			return 0
-		else:
-			logging.warning("No SenseHAT LED screen instance to clear / close.")
-			return -1
+		return sensorData

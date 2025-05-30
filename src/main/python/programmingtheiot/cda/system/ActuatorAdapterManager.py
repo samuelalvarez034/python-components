@@ -19,6 +19,7 @@ from programmingtheiot.data.ActuatorData import ActuatorData
 
 from programmingtheiot.cda.sim.HvacActuatorSimTask import HvacActuatorSimTask
 from programmingtheiot.cda.sim.HumidifierActuatorSimTask import HumidifierActuatorSimTask
+from programmingtheiot.cda.sim.AirPurifierActuatorSimTask import AirPurifierActuatorSimTask
 
 class ActuatorAdapterManager(object):
 	"""
@@ -96,6 +97,8 @@ class ActuatorAdapterManager(object):
 
 			# create the HVAC actuator
 			self.hvacActuator = HvacActuatorSimTask()
+
+			self.airPurifierActuator = AirPurifierActuatorSimTask()
 		else:
 			hueModule=import_module('programmingtheiot.cda.emulated.HumidifierEmulatorTask','HumidiferEmulatorTask')
 			hueClazz=getattr(hueModule,'HumidifierEmulatorTask')

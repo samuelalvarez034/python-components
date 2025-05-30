@@ -41,6 +41,11 @@ class SensorDataGenerator(object):
 	LOW_NORMAL_ENV_HUMIDITY = 35.0
 	HI_NORMAL_ENV_HUMIDITY = 45.0
 	MAX_ENV_HUMIDITY = 100.0
+
+	MIN_ENV_AIR = DEFAULT_MIN_VALUE
+	LOW_NORMAL_ENV_AIR = 600.0
+	HI_NORMAL_ENV_AIR = 1000.0
+	MAX_ENV_AIR = 5000.0
 	
 	MIN_ENV_PRESSURE = 500.0
 	LOW_NORMAL_ENV_PRESSURE = 990.0
@@ -65,6 +70,7 @@ class SensorDataGenerator(object):
 	
 	DEFAULT_TEMP_CURVE = FULL_WAVE
 	DEFAULT_HUMIDITY_CURVE = BELL_CURVE
+	DEFAULT_AIR_CURVE = BELL_CURVE
 	DEFAULT_PRESSURE_CURVE = INVERSE_CURVE
 	
 	def __init__(self, epochOffsetSeconds: float = 0.0, useCurrentTime: bool = True, alignGeneratorToDay: bool = True):
@@ -298,7 +304,13 @@ class SensorDataGenerator(object):
 		self.plotter.xlabel(chartXLabel)
 		self.plotter.grid(True, which = 'both')
 		self.plotter.show()
+	
+	def generateDailyEnvironmentAirQualityDataSet(self, noiseLevel: int = DEFAULT_NOISE, minValue: float = MIN_ENV_AIR, maxValue: float = MAX_ENV_AIR, useSeconds: bool = False):
+
+		if maxValue < self.MIN_ENV_AIR or maxValue > self.MAX_ENV_AIR: maxValue = self.MAX_ENV_AIR
+		if minValue < self.MIN_ENV_AIR or minValue >= maxValue: minValue = maxValue - 1
 		
+		return self.generateDailySensorDataSet(curveType = self.DEFAULT_AIR_CURVE, noiseLevel = noiseLevel, minValue = minValue, maxValue = maxValue, startHour = 0, endHour = 24, useSeconds = useSeconds)
 
 from time import time, ctime
 
