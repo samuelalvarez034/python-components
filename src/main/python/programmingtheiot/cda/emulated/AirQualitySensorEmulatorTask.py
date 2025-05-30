@@ -37,9 +37,6 @@ class AirQualitySensorEmulatorTask(BaseSensorSimTask):
 	
 	def generateTelemetry(self) -> SensorData:
 		sensorData = SensorData(name = self.getName(), typeID = self.getTypeID())
-		sensorVal = self.sh.environ.airquality
-
-		sensorData.setValue(sensorVal)
 		self.latestSensorData = sensorData
 
 		return sensorData

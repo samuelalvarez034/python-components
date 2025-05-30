@@ -48,7 +48,7 @@ class DeviceDataManager(IDataMessageListener):
 		self.enableSensing      = \
 			self.configUtil.getBoolean( \
 				section = ConfigConst.CONSTRAINED_DEVICE, key = ConfigConst.ENABLE_SENSING_KEY)
-
+		print(self.enableSensing,"ASLÑFJOASJFDLJALSDJFÑALSJDF´LAJSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 		# NOTE: this can also be retrieved from the configuration file
 		self.enableActuation    = True
 
